@@ -3,13 +3,13 @@ import sqlite3
 import os
 
 conn = None
-db_name = "exaple.db"
+db_name = "db.sqlite3"
 
 def request_api(symbol):
 
     conn = None
     try:
-        # api_key = "AG6S1WMI4RGUFYEU"
+        
         api_key = os.environ.get('API_KEY')
 
         if not api_key:
@@ -56,8 +56,8 @@ def request_api(symbol):
                 print(f'volume: {volume}')
 
                 # Insert query
-                insert_query = "INSERT INTO financial_data VALUES (?, ?, ?, ?, ?)" , (symbol, date, open_price, close_price, volume)
-                cursor.execute(insert_query)
+                data = (symbol, date, open_price, close_price, volume)
+                cursor.execute("INSERT INTO financial_data (symbol, date, open_price, close_price, volume) VALUES (?, ?, ?, ?, ?)" , data)
 
                 # Commit changes
                 conn.commit()
