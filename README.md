@@ -16,3 +16,8 @@ Y=your_api_key
 
 # How to maintain API Key
 
+
+# Endpoints:
+* [http://127.0.0.1:8000/api/financial_data/] will show the list of stocks.
+
+

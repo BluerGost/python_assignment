@@ -2,5 +2,5 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path(route='', view=views.get_financial_data)    
+    path(route='', view=views.FinancialDataListAPIView.as_view())    
 ]
