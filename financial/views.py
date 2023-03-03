@@ -27,7 +27,30 @@ from .serializers import FinancialDataSerializer
 
 #     return Response(data)
 
+#https://www.django-rest-framework.org/api-guide/filtering/#api-guide
+# https://www.django-rest-framework.org/api-guide/requests/
+
 class FinancialDataListAPIView(generics.ListAPIView):
     queryset = FinancialDataModel.objects.all()
     serializer_class = FinancialDataSerializer
-    
+
+    def get_queryset(self):
+        queryset = FinancialDataModel.objects.all()
+
+        # Filter by symbol if the symbol parameter is provided
+        symbol = self.request.query_params.get('symbol')
+        if symbol:
+            queryset = queryset.filter(symbol=symbol)
+
+        # Filter by start_date if the start_date parameter is provided
+        # https://docs.djangoproject.com/en/dev/ref/models/querysets/#gte
+        start_date = self.request.query_params.get('start_date')
+        if start_date:
+            queryset = queryset.filter(date__gte=start_date)
+
+        # Filter by end_date if the end_date parameter is provided
+        end_date = self.request.query_params.get('end_date')
+        if end_date:
+            queryset = queryset.filter(date__lte=end_date)
+
+        return queryset
