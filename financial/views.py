@@ -8,6 +8,8 @@ from django.forms.models import model_to_dict
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import generics
+from django.core.paginator import Paginator
+from rest_framework.pagination import PageNumberPagination
 
 from .models import FinancialDataModel
 from .serializers import FinancialDataSerializer
@@ -54,3 +56,32 @@ class FinancialDataListAPIView(generics.ListAPIView):
             queryset = queryset.filter(date__lte=end_date)
 
         return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        # Pagination
+        limit = request.query_params.get('limit', 5)
+        paginator = Paginator(queryset, limit)
+        page = request.query_params.get('page', 1)
+        page_obj = paginator.get_page(page)
+
+        # Serializing the data and creating the response
+        serializer = self.get_serializer(page_obj, many=True)
+
+        response_data = {
+            'data': serializer.data,
+            'pagination': {
+                'count': paginator.count,
+                'page': page_obj.number,
+                'limit': int(limit),
+                'pages': paginator.num_pages
+            },
+            'info': {'error': ''}
+        }
+
+        return Response(response_data)
+    
+# class CustomPagination(PageNumberPagination):
+#     page_size = 5
+#     page_query_param = 'page'
