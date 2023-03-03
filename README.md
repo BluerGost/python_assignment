@@ -19,5 +19,6 @@ Y=your_api_key
 
 # Endpoints:
 * [http://127.0.0.1:8000/api/financial_data/] will show the list of stocks.
+* [http://127.0.0.1:8000/api/statistics/?start_date=2023-01-27&end_date=2023-02-24&symbol=IBM] will show the statistics.
 
 
