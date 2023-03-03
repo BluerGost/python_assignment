@@ -14,6 +14,9 @@ from rest_framework.pagination import PageNumberPagination
 from .models import FinancialDataModel
 from .serializers import FinancialDataSerializer
 
+from datetime import datetime
+from django.db.models import Avg
+
 # Create your views here.
 # @api_view(["GET"])
 # def get_financial_data(request, *args, **kwargs):
@@ -85,3 +88,43 @@ class FinancialDataListAPIView(generics.ListAPIView):
 # class CustomPagination(PageNumberPagination):
 #     page_size = 5
 #     page_query_param = 'page'
+
+
+class StatisticsAPIView(generics.RetrieveAPIView):
+    serializer_class = FinancialDataSerializer
+
+    def get(self, request, *args, **kwargs):
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        symbol = request.GET.get('symbol')
+
+        # check if all the required parameter was provided in the request.
+        if not all([start_date, end_date, symbol]):
+            return Response({'info': {'error': 'start_date, end_date, and symbols parameters are required'}})
+
+        # convert string dates to date objects
+        start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+
+        # query the database for financial data in the specified period
+        financial_data = FinancialDataModel.objects.filter(symbol__in=symbol,
+                                                           date__gte=start_date_obj, 
+                                                           date__lte=end_date_obj)
+
+        # calculate the average daily open, close, and volume
+        avg_daily_open = financial_data.aggregate(avg_daily_open=Avg('open_price'))['avg_daily_open']
+        avg_daily_close = financial_data.aggregate(avg_daily_close=Avg('close_price'))['avg_daily_close']
+        avg_daily_volume = financial_data.aggregate(avg_daily_volume=Avg('volume'))['avg_daily_volume']
+
+        # prepare the response data
+        data = {
+            'start_date': start_date,
+            'end_date': end_date,
+            'symbol': symbol,
+            'average_daily_open_price': avg_daily_open,
+            'average_daily_close_price': avg_daily_close,
+            'average_daily_volume': avg_daily_volume,
+        }
+        response_data = {'data': data, 'info': {'error': ''}}
+
+        return Response(response_data)
